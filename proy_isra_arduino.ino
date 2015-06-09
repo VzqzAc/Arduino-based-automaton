@@ -3,17 +3,19 @@
 LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
 boolean flags[8], space;
 //char str[8], other[8];
-String final = "----------------";
+char* final = "----------------";
+int entry = 0;
 char cap_letters[26];
 char lowercase_letters[26];
 char* binaries[] = {"00001","00010","00011","00100","00101","00110","00111","01000","01001","01010","01011","01100","01101",
                      "01110","01111","10000","10001","10010","10011","10100","10101","10110","10111","11000","11001","11010"};
 //65-90 mayus
 int where = 3, index = 0, flag_count;
-boolean cap, space_flag = false, last_validation = true, cap_flag = false;
+boolean cap, space_flag = false, last_validation = true, cap_flag = false, to_keep_previous_apart = false;
 String message, message2, message3;
 #define zero_button 8
 #define one_button 9
+#define led_pin 7
 
 int check_flags()
 {
@@ -49,34 +51,58 @@ void setup()
       justforfun++;
     }
   cap = false;
-  message = String();
+  message = final;
   message2 = String();
   message3 = String();
   pinMode(one_button, INPUT);
   pinMode(zero_button, INPUT);
+  pinMode(led_pin, OUTPUT);
   lcd.begin(16, 2);
-  lcd.setCursor(0, 1);
+  lcd.setCursor(0, 0);
+  lcd.print("Cargando...");
+  delay(5000);
 }
 
 void loop()
 {
+  entry = 0;
+  digitalWrite(led_pin, HIGH);
   lcd.clear();
-  lcd.setCursor(0, 1);
+  lcd.setCursor(0, 0);
   lcd.print(message);
-  lcd.setCursor(0, 2);
+  lcd.setCursor(0, 1);
   lcd.print(message2);
+  delay(250);
+  while(!digitalRead(zero_button) && !digitalRead(one_button))
+  {
+    digitalWrite(led_pin, LOW);
+    if(digitalRead(zero_button))
+    {
+         entry = 1;
+         delay(500);
+         break;
+    }
+    if(digitalRead(one_button))
+    {
+        entry = 2;
+         delay(500);
+         break;
+    }
+  }
   if(!space)
   {
     flag_count = check_flags();
     switch (flag_count) 
     {
           case 0:
-            if(digitalRead(one_button))
+            if(entry == 2)
             {
               message2 = "No aceptado";
+              message3.remove(0);
+                break;
                 //for(int i=0; i<8; i++) flags[i] = 0;
             }
-            else if(digitalRead(zero_button))
+            else if(entry == 1)
             {
               flags[0] = true;
               lcd.clear();
@@ -84,126 +110,154 @@ void loop()
               lcd.print("0");
               message3.concat("0");
               message2 = message3;
+                break;
             }
             break;
           case 1:
-            if(digitalRead(one_button))
+            if(entry == 2)
             {
               message3.concat("1");
               message2 = "Letras";
+              space_flag = false;
+              flags[1] = true;
+                break;
             }
-            else if(digitalRead(zero_button))
+            else if(entry == 1)
             {
               message3.concat("0");
+              message2 = message3;
               space_flag = true;
+              flags[1] = true;
+                break;
               //message2 = "Espacio";
             }
-            flags[1] = true;
             break;
           case 2:
-            if(digitalRead(one_button))
+            if(entry == 2)
             {
                 if(!space_flag)
                 {
                     message3.concat("1");
-                    message2 = message3 + "Minusculas";
+                    delay(20);
+                    message2 = message3 + " Minusculas";
                     flags[2] = true;
+                    break;
                 }
-                //else if(flags[1] && cap)
-                //{
-                //  message2 = "No se pueden min";
-                //  for(int i=0; i<8; i++) flags[i] = 0;
-                //  message3.remove(0);
-                //}
                 else
                 {
                   message2 = "Espacio(00000)";
+                  to_keep_previous_apart = true;
                   space = true;
                   message3.concat("1");
                   flags[2] = true;
+                  break;
                 }
+                break;
             }
-            if(digitalRead(zero_button))
+            else if(entry == 1)
             {
               cap_flag = true;
-              if(cap)
+              if(cap && !space_flag)
                 {
                   message2 = "No se pueden MAY";
                   for(int i=0; i<8; i++) flags[i] = 0;
                   message3.remove(0);
+                  break;
                 }
-              else
+              else if(!cap && !space_flag)
                 {
                   message3.concat("0");
                   message2 = message3 + "Mayusculas";
                   flags[2] = true;
+                  break;
                 }
-            }
-            break;
-          default:
-            if(flags[3] && flags[4] && flags[6])
-            {
-              if(digitalRead(zero_button))
-              {
-                message3.concat("0");
-                final[index] = check_word(message3.substring(3), cap_flag);
-                index++;
-                for(int i = 0; i < 8; i++) flags[i] = false;
-                break;
-              }
-              else if(digitalRead(one_button))
+              else
               {
                 message2 = "No aceptado";
                 message3.remove(0);
                 for(int i = 0; i < 8; i++) flags[i] = false;
                 break;
               }
+                break;
             }
-            if(!flags[7])
+            break;
+          default:
+            if(flags[3] && flags[4] && flags[6])
             {
-              if(digitalRead(zero_button))
+              if(entry == 1)
+              {
+                message3.concat("0");
+                message2 = message3;
+                final[index] = check_word(message3.substring(3), cap_flag);
+                index++;
+                for(int i = 0; i < 8; i++) flags[i] = false;
+                break;
+              }
+              else if(entry == 2)
+              {
+                message2 = "No aceptado";
+                message3.remove(0);
+                for(int i = 0; i < 8; i++) flags[i] = false;
+                break;
+              }
+              break;
+            }
+            if(flag_count < 7)
+            {
+              if(entry == 1)
               {
                   message3.concat("0");
                   message2 = message3;
+                  flags[flag_count + 1] = true;
+                break;
               }
-              else if(digitalRead(one_button))
+              else if(entry == 2)
               {
                 message3.concat("1");
                 message2 = message3;
+                flags[flag_count + 1] = true;
+                break;
               }
+                break;
             }
             else
             {
-              final[index] = check_word(message3.substring(3), cap_flag);
+              message[index] = check_word(message3.substring(3), cap_flag); //Checar si es 4 o 3
               index++;
+              message2.remove(0);
+              message3.remove(0);
               for(int i = 0; i < 8; i++) flags[i] = false;
+                break;
             }
-            Serial.println();
-            // do something
       }
     }
-    if(space)
+    if(space && !to_keep_previous_apart)
     {
-      if(where == 8)
+      if(where == 7)
       {
           for(int i=0; i<8; i++)  flags[i] = false;
           space = false;
           message3.remove(0);
           message.setCharAt(index, ' ');
+          message2 = message3;
+          where = 0;
           index++;
       }
-      else if(digitalRead(zero_button))
+      else if(entry == 1)
       {
         message3.concat("0");
-        flags[where] = 1;
+        message2 = message3;
+        flags[where] = true;
         where++;
       }
-      else if(digitalRead(one_button))
+      else if(entry == 2)
       {
         message2 = "No aceptado";
         message3.remove(0);
         for(int i=0; i<8; i++)  flags[i] = false;
         space = false;
+        where = 3;
       }
-    }  
+    }
+    else to_keep_previous_apart = false;
 }
