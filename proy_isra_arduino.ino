@@ -5,9 +5,9 @@ boolean flags[8], space;
 //char str[8], other[8];
 char* final = "----------------";
 int entry = 0;
-char cap_letters[26];
-char lowercase_letters[26];
-char* binaries[] = {"00001","00010","00011","00100","00101","00110","00111","01000","01001","01010","01011","01100","01101",
+char* cap_letters = {"abcdefghijklmnopqrstuvwxyz"};
+char* lowercase_letters = {"ABCDEFGHIJKLMNOPQRSTUVWXYZ"};
+char* binaries[26] = {"00001","00010","00011","00100","00101","00110","00111","01000","01001","01010","01011","01100","01101",
                      "01110","01111","10000","10001","10010","10011","10100","10101","10110","10111","11000","11001","11010"};
 //65-90 mayus
 int where = 3, index = 0, flag_count;
@@ -37,19 +37,7 @@ char check_word(String str, boolean cap_flag)
 
 void setup()
 {
-  int justforfun;
-  for(int i=0; i<8; i++){
-      flags[i] = false;
-  }
-  for(int i=65; i<91; i++){
-      cap_letters[justforfun] = i;
-      justforfun++;
-    }
-  justforfun = 0;
-  for(int i=97; i<123; i++){
-      lowercase_letters[justforfun] = i;
-      justforfun++;
-    }
+  for(int i=0; i<8; i++)  flags[i] = false;
   cap = false;
   message = final;
   message2 = String();
@@ -182,13 +170,14 @@ void loop()
             }
             break;
           default:
-            if(flags[3] && flags[4] && flags[6])
+            if(flag_count == 6)
             {
               if(entry == 1)
               {
-                message3.concat("0");
-                message2 = message3;
-                final[index] = check_word(message3.substring(3), cap_flag);
+                message3.remove(0);
+                message2.remove(0);
+                delay(100);
+                message[index] = check_word(message3.substring(3), cap_flag);
                 index++;
                 for(int i = 0; i < 8; i++) flags[i] = false;
                 break;
@@ -202,7 +191,7 @@ void loop()
               }
               break;
             }
-            if(flag_count < 7)
+            else if(flag_count < 7)
             {
               if(entry == 1)
               {
@@ -222,6 +211,7 @@ void loop()
             }
             else
             {
+              delay(100);
               message[index] = check_word(message3.substring(3), cap_flag); //Checar si es 4 o 3
               index++;
               message2.remove(0);
