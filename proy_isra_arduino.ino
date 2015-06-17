@@ -5,13 +5,16 @@ boolean flags[8], space;
 //char str[8], other[8];
 char* final = "----------------";
 int entry = 0;
-char* cap_letters = {"abcdefghijklmnopqrstuvwxyz"};
-char* lowercase_letters = {"ABCDEFGHIJKLMNOPQRSTUVWXYZ"};
+char* lowercase_letters = "abcdefghijklmnopqrstuvwxyz";
+char* cap_letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 char* binaries[26] = {"00001","00010","00011","00100","00101","00110","00111","01000","01001","01010","01011","01100","01101",
                      "01110","01111","10000","10001","10010","10011","10100","10101","10110","10111","11000","11001","11010"};
 //65-90 mayus
+
+int special_case;
+
 int where = 3, index = 0, flag_count;
-boolean cap, space_flag = false, last_validation = true, cap_flag = false, to_keep_previous_apart = false;
+boolean cap, space_flag = false, last_validation = true, cap_flag, to_keep_previous_apart = false;
 String message, message2, message3;
 #define zero_button 8
 #define one_button 9
@@ -26,22 +29,34 @@ int check_flags()
   return count;
 }
 
-char check_word(String str, boolean cap_flag)
+char check_word(String str, boolean capflag)
 {
+  Serial.print("The cap flag is "); Serial.println(capflag);
   for(int i=0; i<26; i++){
-      if(str.equals(binaries[i]) && cap_flag) return cap_letters[i];
-      else if(str.equals(binaries[i])) return lowercase_letters[i]; 
+      if(str.equals(binaries[i]))
+      {
+        if(capflag) return cap_letters[i];
+        else return lowercase_letters[i];
+      }
   }
+  message2 = "No aceptado";
+  return '-';
 }
 
 
 void setup()
 {
+  Serial.begin(9600);
   for(int i=0; i<8; i++)  flags[i] = false;
+  for(int i=0; i<26; i++){
+      Serial.println(lowercase_letters[i]);
+  }
   cap = false;
+  cap_flag = false;
   message = final;
   message2 = String();
   message3 = String();
+  special_case = 0;
   pinMode(one_button, INPUT);
   pinMode(zero_button, INPUT);
   pinMode(led_pin, OUTPUT);
@@ -87,8 +102,7 @@ void loop()
             {
               message2 = "No aceptado";
               message3.remove(0);
-                break;
-                //for(int i=0; i<8; i++) flags[i] = 0;
+              break;
             }
             else if(entry == 1)
             {
@@ -107,7 +121,7 @@ void loop()
               message3.concat("1");
               message2 = "Letras";
               space_flag = false;
-              flags[1] = true;
+              flags[flag_count] = true;
                 break;
             }
             else if(entry == 1)
@@ -115,7 +129,7 @@ void loop()
               message3.concat("0");
               message2 = message3;
               space_flag = true;
-              flags[1] = true;
+              flags[flag_count] = true;
                 break;
               //message2 = "Espacio";
             }
@@ -128,7 +142,7 @@ void loop()
                     message3.concat("1");
                     delay(20);
                     message2 = message3 + " Minusculas";
-                    flags[2] = true;
+                    flags[flag_count] = true;
                     break;
                 }
                 else
@@ -137,14 +151,13 @@ void loop()
                   to_keep_previous_apart = true;
                   space = true;
                   message3.concat("1");
-                  flags[2] = true;
+                  flags[flag_count] = true;
                   break;
                 }
                 break;
             }
             else if(entry == 1)
             {
-              cap_flag = true;
               if(cap && !space_flag)
                 {
                   message2 = "No se pueden MAY";
@@ -153,10 +166,12 @@ void loop()
                   break;
                 }
               else if(!cap && !space_flag)
-                {
+                { 
+                  Serial.println("Entered to cap_flag assignation");   
+                  cap_flag = true;
                   message3.concat("0");
                   message2 = message3 + "Mayusculas";
-                  flags[2] = true;
+                  flags[flag_count] = true;
                   break;
                 }
               else
@@ -169,21 +184,89 @@ void loop()
                 break;
             }
             break;
-          default:
-            if(flag_count == 6)
-            {
+            case 3: case 4:
+/*zero*/      if(entry == 1)
+              {
+                message3.concat("0");
+                message2 = message3;
+                flags[flag_count] = true;
+                break;
+              }
+              else if(entry == 2)
+              {
+                special_case++;
+                message3.concat("1");
+                message2 = message3;
+                flags[flag_count] = true;
+                break;
+              }
+              break;
+
+            case 5:
               if(entry == 1)
               {
-                message3.remove(0);
+                special_case++;
+                message3.concat("0");
+                message2 = message3;
+                flags[5] = true;
+                break;
+              }
+              else if(entry == 2)
+              {
+                if(special_case == 2)
+                {
+                  message2 = "No aceptado";
+                  message3.remove(0);
+                  special_case = false;
+                  for(int i = 0; i < 8; i++) flags[i] = false;
+                  break;
+                }
+                message3.concat("1");
+                message2 = message3;
+                flags[5] = true;
+                break;
+              }
+              break;
+            case 6:
+              if(entry == 1)
+              {
+                message3.concat("0");
+                message2 = message3;
+                flags[flag_count] = true;
+                break;
+              }
+              else if(entry == 2)
+              {
+                special_case++;
+                message3.concat("1");
+                message2 = message3;
+                flags[flag_count] = true;
+                break;
+              }
+              break;
+              // CHECK FOR THE SPECIAL CASE, THE LAST CASE OF THE .txt FILE
+          default:
+            if(flag_count == 7 && special_case == 3)
+            {
+              Serial.println("Entered to special case");
+              if(entry == 1)
+              {
                 message2.remove(0);
                 delay(100);
+                Serial.print("This is the substring: ");  Serial.println(message3.substring(3));
+                Serial.print("And the string: "); Serial.println(message3);
                 message[index] = check_word(message3.substring(3), cap_flag);
+                if(cap_flag){ cap_flag = !cap_flag;   cap = true; }
                 index++;
+                message3.remove(0);
+                special_case = 0;
                 for(int i = 0; i < 8; i++) flags[i] = false;
                 break;
               }
               else if(entry == 2)
               {
+                Serial.print("This is the substring: ");  Serial.println(message3.substring(3));
+                Serial.print("And the string: "); Serial.println(message3);
                 message2 = "No aceptado";
                 message3.remove(0);
                 for(int i = 0; i < 8; i++) flags[i] = false;
@@ -191,33 +274,39 @@ void loop()
               }
               break;
             }
-            else if(flag_count < 7)
+            else if(flag_count < 8)
             {
               if(entry == 1)
               {
                   message3.concat("0");
                   message2 = message3;
-                  flags[flag_count + 1] = true;
+                  flags[flag_count] = true;
                 break;
               }
               else if(entry == 2)
               {
                 message3.concat("1");
                 message2 = message3;
-                flags[flag_count + 1] = true;
+                flags[flag_count] = true;
                 break;
               }
-                break;
             }
-            else
+            if(flag_count == 8)
             {
               delay(100);
+              message2.remove(0);
+              Serial.print("This is the substring: ");  Serial.println(message3.substring(3));
+              Serial.print("And the string: "); Serial.println(message3);
+              special_case = 0;
               message[index] = check_word(message3.substring(3), cap_flag); //Checar si es 4 o 3
               index++;
-              message2.remove(0);
+              
+              if(cap_flag){ cap_flag = !cap_flag;   cap = true; }
+              
               message3.remove(0);
+              special_case = 0;
               for(int i = 0; i < 8; i++) flags[i] = false;
-                break;
+              break;
             }
       }
     }
@@ -231,6 +320,7 @@ void loop()
           message.setCharAt(index, ' ');
           message2 = message3;
           where = 0;
+          special_case = 0;
           index++;
       }
       else if(entry == 1)
@@ -246,6 +336,7 @@ void loop()
         message3.remove(0);
         for(int i=0; i<8; i++)  flags[i] = false;
         space = false;
+        special_case = 0;
         where = 3;
       }
     }
