@@ -7,8 +7,8 @@ on the Autonomus University of Aguascalientes by Omar Vazquez.
 The purpose of this is to convert an 8-bit digital (binary) input into ABC letters from the ascii code
 and the ascii space by following the rules shown below:
 
-1. Only capital letters, lowercase letters, and the space are accepted by the automaton
-2. There will be accepted only one capital letter by run
+##1. Only capital letters, lowercase letters, and the space are accepted by the automaton
+##2. There will be accepted only one capital letter by run
 
 The first rule represent 3 special cases, the 'a', 'A', 'z', and 'Z' in the ascii table, they're meant
 to represent the top and bottom of the binaries accepted by the automaton, independently of the first
