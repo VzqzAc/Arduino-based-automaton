@@ -2,7 +2,7 @@
 A simple arduino-based automaton that converts binary input to ascii alphabet (letters and space), showing the current input on a display where also is shown if an error on the input occurs.
 
 This project was originally made for the 'Automatons I' subject
-on the Autonomus University of Aguascalientes by Omar Vazquez.
+on the Autonomus University of Aguascalientes.
 
 The purpose of this is to convert an 8-bit digital (binary) input into ABC letters from the ascii code
 and the ascii space by following the rules shown below:
