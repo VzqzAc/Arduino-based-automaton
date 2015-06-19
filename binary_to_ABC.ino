@@ -1,7 +1,7 @@
 /*
     Arduino-based automaton
     This project was originally made for the 'Automatons I' subject
-    on the Autonomus University of Aguascalientes by Omar Vazquez.
+    on the Autonomous University of Aguascalientes.
 
     The purpose of this is to convert an 8-bit digital (binary) input into ABC letters from the ascii code
     and the ascii space by following the rules shown below:
