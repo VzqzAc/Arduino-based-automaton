@@ -18,6 +18,4 @@ space is represented by the binary number '00100000', which is also a special ca
 The second rule will be verified by a flag, you can notice there are many flags in this code, but remember
 that was made for academic purposes only, anyway there might be a next version more clean-coded
 
-At the moment the code is not commented and it might be confused to understand.
-
-COMING SOON: Commented code, schemas...
+At the moment the code is not properly commented and it might be confused to understand.
