@@ -10,6 +10,8 @@ and the ascii space by following the rules shown below:
 ##1. Only capital letters, lowercase letters, and the space are accepted by the automaton
 ##2. There will be accepted only one capital letter by run
 
+![Automaton layout](/Automaton.jpg)
+
 The first rule represent 3 special cases, the 'a', 'A', 'z', and 'Z' in the ascii table, they're meant
 to represent the top and bottom of the binaries accepted by the automaton, independently of the first
 three digits of the binary number, the next five digits must be between '00001' and '11010'. Also, the
